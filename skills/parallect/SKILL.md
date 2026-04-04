@@ -21,8 +21,8 @@ It queries multiple frontier AI providers simultaneously and synthesizes
 their findings into a single report with cross-referenced citations,
 extracted claims, conflict resolution, and follow-on suggestions.
 
-Research is **asynchronous** -- jobs take 30 seconds to 10+ minutes
-depending on mode and providers. You MUST poll for completion. Never block.
+Research is **asynchronous** -- jobs take 4 to 45+ minutes depending
+on tier and providers. You MUST poll for completion. Never block.
 
 ## Connection
 
@@ -83,12 +83,12 @@ Before submitting ANY research:
 
    | User says... | Map to tier | Max cost | Providers | Duration |
    |-------------|-------------|----------|-----------|----------|
-   | "quick check", "just a glance" | XXS | ~$1 | 1 provider | ~30s |
-   | "quick look", "brief" | XS | ~$2 | 1-2 providers | ~1min |
-   | "standard", "normal" | S | ~$5 | 2 providers | ~2min |
-   | "thorough", "detailed" | M | ~$15 | 3-4 providers | ~5min |
-   | "comprehensive", "deep" | L | ~$30 | 4-5 providers | ~8min |
-   | "exhaustive", "everything" | XL | ~$60 | All providers | ~10min |
+   | "quick check", "just a glance" | XXS | ~$1 | 1 provider | ~4-5 min |
+   | "quick look", "brief" | XS | ~$2 | 1-2 providers | ~8-10 min |
+   | "standard", "normal" | S | ~$5 | 2 providers | ~15-18 min |
+   | "thorough", "detailed" | M | ~$15 | 3-4 providers | ~15-20 min |
+   | "comprehensive", "deep" | L | ~$30 | 4-5 providers | ~20-25 min |
+   | "exhaustive", "everything" | XL | ~$60 | All providers | ~30-45 min |
 
 4. Tell the user: "Your balance is $X.XX. A [tier] research will cost
    up to $Y. That will query [providers]. Want to proceed?"
@@ -135,9 +135,10 @@ than every 30 seconds.
 - "All providers done, synthesis is running now..."
 - "Research complete! Let me grab the results."
 
-**Timeout:** If the job hasn't completed after 15 minutes, inform the
-user and offer alternatives (keep polling, try fewer providers, or
-switch to fast mode).
+**Timeout:** Research can take up to 45 minutes for large XL jobs.
+If the job hasn't completed after 30 minutes, inform the user and
+offer alternatives (keep polling, try fewer providers, or switch
+to fast mode). For XXS/XS tiers, flag if it exceeds 15 minutes.
 
 ### Step 4: Deliver results
 
@@ -189,8 +190,8 @@ You are spending the user's money at machine speed. Be responsible:
 
 | Mode | When to use | Duration | Output |
 |------|------------|----------|--------|
-| `methodical` | Accuracy and breadth matter (default) | 2-10 min | Multi-provider synthesis with claims and citations |
-| `fast` | User says "quick" / "fast" / time-sensitive | 10-30s | Single provider raw report, no synthesis |
+| `methodical` | Accuracy and breadth matter (default) | 5-45 min | Multi-provider synthesis with claims and citations |
+| `fast` | User says "quick" / "fast" / time-sensitive | 2-8 min | Single provider raw report, no synthesis |
 
 ## Session Memory
 

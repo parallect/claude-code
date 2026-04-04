@@ -48,14 +48,14 @@ OAuth2. On first use, Claude Code opens your browser to authorize with your Para
 
 ## Budget Tiers
 
-| Tier | Max Cost | Providers | Best for |
-|------|----------|-----------|----------|
-| XXS | ~$1 | 1 | Quick factual lookups |
-| XS | ~$2 | 1-2 | Brief overviews |
-| S | ~$5 | 2 | Standard questions |
-| M | ~$15 | 3-4 | Detailed research |
-| L | ~$30 | 4-5 | Comprehensive analysis |
-| XL | ~$60 | All | Exhaustive multi-provider |
+| Tier | Max Cost | Providers | Duration | Best for |
+|------|----------|-----------|----------|----------|
+| XXS | ~$1 | 1 | ~4-5 min | Quick factual lookups |
+| XS | ~$2 | 1-2 | ~8-10 min | Brief overviews |
+| S | ~$5 | 2 | ~15-18 min | Standard questions |
+| M | ~$15 | 3-4 | ~15-20 min | Detailed research |
+| L | ~$30 | 4-5 | ~20-25 min | Comprehensive analysis |
+| XL | ~$60 | All | ~30-45 min | Exhaustive multi-provider |
 
 Claude always discusses budget before spending your money.
 
