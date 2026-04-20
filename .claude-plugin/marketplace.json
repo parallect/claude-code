@@ -1,0 +1,22 @@
+{
+  "name": "parallect",
+  "owner": {
+    "name": "SecureCoders",
+    "email": "support@parallect.ai"
+  },
+  "metadata": {
+    "description": "Multi-provider deep research for Claude Code — Parallect.ai + prxhub, as a single plugin."
+  },
+  "plugins": [
+    {
+      "name": "parallect",
+      "source": "./",
+      "description": "Deep research via Parallect.ai (multi-provider synthesis) + prxhub (registry search). The skill searches prxhub's public registry first — if research already exists for the topic, no money is spent.",
+      "category": "research",
+      "keywords": ["research", "mcp", "parallect", "prxhub", "multi-provider"],
+      "homepage": "https://parallect.ai",
+      "repository": "https://github.com/parallect/claude-code-plugin",
+      "license": "MIT"
+    }
+  ]
+}
