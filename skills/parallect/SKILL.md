@@ -28,6 +28,18 @@ You have access to two research systems:
   Perplexity, Gemini, OpenAI, Grok, and Anthropic in parallel and
   synthesizes their findings. Requires OAuth2 auth and costs real money.
 
+These are **two products with two different value propositions** — never
+conflate them when writing research queries, positioning copy, or summaries.
+
+| Product | Value prop | Signature stat/phrase | Nearest comparables |
+|---|---|---|---|
+| **prxhub** | Cache layer — "search before you research" so you don't re-run what's already answered | Bundle count, claim count, signatures verified. Phrases: "you already ran that research," "check before you query." | Stack Overflow, Papers with Code, npm, GitHub, Wikipedia |
+| **Parallect.ai** | Divergence engine — no single AI is consistently right, so fan out and cross-check | **"85% of provider findings diverge on the same question."** | Contrasted against single-provider AI tools (ChatGPT, Claude, Perplexity alone) |
+
+**Concrete rule:** if a research query, piece of marketing copy, or summary is about **prxhub**, lead with cache/re-use/registry framing and **do not surface the 85% divergence stat on its hero or primary messaging surfaces** — that stat argues for multi-provider research (Parallect.ai's job) and confuses prxhub's "don't re-run this" story.
+
+When querying about Parallect.ai, the inverse applies: lead with divergence; don't frame it as a registry.
+
 Research is **asynchronous** — jobs take 4 to 90+ minutes depending on
 tier and providers. You MUST poll for completion. Never block.
 
@@ -342,6 +354,23 @@ Good research queries have four parts:
 
 Aim for 100-200 word queries. Shorter than that usually lacks
 structure; much longer starts to over-constrain.
+
+### Watch for product-framing bleed on prxhub vs parallect.ai queries
+
+If the research topic is **prxhub** (positioning, launch strategy,
+homepage copy, messaging, adoption, competitive analysis): **explicitly
+scope the query away from multi-provider / divergence framing**. Include
+a line in the query along the lines of "frame prxhub's value
+proposition as a cache / registry of already-done research (Stack
+Overflow, Papers with Code, npm analog). Do not suggest the 85%
+divergence stat as a proof point on prxhub's surfaces — that argument
+belongs to Parallect.ai." Without this scoping, providers will drift
+toward the dominant Parallect-ecosystem talking point and produce a
+hero recommendation that sells the wrong product.
+
+The inverse also applies: if the topic is **Parallect.ai** (pricing,
+provider mix, divergence claims), do NOT scope it as "registry /
+repository" — it's a research-execution tool, not a cache.
 
 ### If the user is vague, ask ONE clarifying question — don't guess
 
