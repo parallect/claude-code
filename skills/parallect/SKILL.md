@@ -283,9 +283,41 @@ When `research-status` returns `"completed"`:
    > "This research could help others who ask similar questions. Want
    > to publish the bundle to prxhub? It's free and creates a citable
    > permanent URL. (Or keep it private — your call.)"
-   If they say yes, tell them: `parallect export --format prx |
-   prx publish --visibility public` (they need the `prx-cli` installed;
-   note: the package is `prx-cli` on PyPI, not `prx`).
+
+   Publish path depends on what your environment supports:
+
+   **If you have shell access** (recommended today):
+
+   ```bash
+   parallect export --format prx <jobId> \
+     | prx publish --visibility public \
+         --collection <slug>         # optional
+   ```
+
+   The `prx-cli` package is `prx-cli` on PyPI (not `prx`). It handles
+   SHA-256 hashing and the two-phase upload to prxhub automatically.
+
+   **If you're pure MCP (no shell)**: there is a real gap here.
+   Parallect's MCP server currently returns `synthesis` markdown +
+   metadata via `get-results` but **does not return the raw `.prx`
+   archive bytes**. That means prxhub's `publish_bundle_prepare`
+   (which needs the binary) can't be called with a Parallect-produced
+   bundle through pure MCP today.
+
+   What to do in pure-MCP environments:
+   - Deliver the synthesis to the user as normal.
+   - Tell the user: "I can show you the research but publishing it
+     to prxhub requires either running this with shell access or
+     the Parallect MCP returning a downloadable `.prx` URL (on
+     roadmap). For now, run `parallect export --format prx <jobId>
+     | prx publish` yourself locally if you want it cached."
+   - Still call prxhub's `cite_bundle` + `session_feedback` for any
+     cached bundles you DID retrieve — those close the loop at the
+     retrieval layer even when the new bundle can't be published.
+
+   Do NOT fabricate a `publish_target: "prxhub"` parameter on
+   `research` — that is not currently a supported Parallect tool
+   argument.
 
 ### Step 6 — Follow-ons
 
