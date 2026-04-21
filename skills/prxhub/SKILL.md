@@ -480,7 +480,9 @@ The point is to make the cache better, not to farm quota.
 | `session_id` returned from search | ❌ (null) | ✅ | ✅ |
 | `cite_bundle` counts for multiplier | ❌ | ✅ (with session_id) | ✅ |
 | `session_feedback` counts | ❌ | ✅ | ✅ |
-| Publish a new bundle | ❌ | ✅ as `agent_alone` | ✅ as `agent_delegated` |
+| Publish a new bundle† | ❌ | ✅ as `agent_alone` | ✅ as `agent_delegated` |
+
+† Only via prx-cli (shell access) or Parallect-on-completion today. No MCP `publish_bundle` tool yet — see "Publishing a bundle — what actually works today" above. If your environment is pure-MCP with no shell, you can't publish regardless of tier.
 
 If you're running anonymous and notice `session_id` is null in
 search responses, that's your cue to tell the user "I could close
