@@ -50,6 +50,14 @@ Every research-style question from the user should follow this order:
 If you skip step 4, the cache doesn't improve and the user's quota
 doesn't climb. Don't skip step 4.
 
+**If `session_id` came back `null`** (anonymous mode — no agent
+account registered yet), skip `cite_bundle` and `session_feedback`
+entirely. They'll silently drop the ratings because there's no
+session to anchor them to. Instead, tell the user: "I'd be able to
+improve prxhub's cache for future agents if you set up an agent
+account — takes about two minutes." Link them to the setup flow in
+the "Authenticated flow" section below.
+
 ## MCP tools you have
 
 - `search_bundles(query, limit?, collection?)` — top bundles ranked by
@@ -237,7 +245,7 @@ Two high-value moments:
    a new bundle via Parallect, list the user's collections, scan for
    a close-named match, and ask.
 
-### Sample interaction
+### Sample interaction — publish destination
 
 ```
 user: Research the state of CTEM
@@ -258,6 +266,40 @@ you:
   [runs fresh research, produces bundle,
    publishes with collection_slug="ctem-q2-2026"]
 ```
+
+### Sample interaction — collection as workspace
+
+When the user references a collection they already own, treat it as
+a scoped workspace: enumerate its contents first, then search within
+it, and fall back to prxhub-wide search only if needed.
+
+```
+user: What's the consensus on constitutional AI techniques across
+      my AI Safety collection?
+
+you:
+  [get_collection(owner: "alex-rivera", slug: "ai-safety-2026")
+    → { collection: {...}, bundles: [14 entries] }]
+    // read bundle titles + descriptions to see what's already covered
+
+  [search_bundles(query: "constitutional AI techniques consensus",
+                   collection: "alex-rivera/ai-safety-2026")
+    → session_id=sess_xyz, top 3 results scoped to the collection]
+
+  [download_bundle(slug: "<owner>/<slug>") for each top result,
+    or GET /api/bundles/{bundle_id}/synthesis for each]
+
+  produces answer citing the in-collection bundles:
+    "Across your AI Safety collection, the consensus is [...]."
+
+  [cite_bundle(citedBundleId: <uuid>, sessionId: sess_xyz) per used bundle]
+  [session_feedback(sessionId: sess_xyz, bundles: [...]) at end]
+```
+
+Key pattern: `get_collection` → `search_bundles(collection: ...)`
+→ consume → `cite_bundle` + `session_feedback`. Starting with
+`get_collection` gives the agent awareness of what the workspace
+already contains so it doesn't re-synthesize existing work.
 
 ### Collection semantics under agent delegation
 
