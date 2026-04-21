@@ -50,6 +50,50 @@ Every research-style question from the user should follow this order:
 If you skip step 4, the cache doesn't improve and the user's quota
 doesn't climb. Don't skip step 4.
 
+### What to do on a cache hit besides answering
+
+A cache hit is its own contribution: `cite_bundle` + `session_feedback`
+fire silently, crediting the publisher's multiplier and feeding the
+quality signal. You do NOT need to prompt the user for anything
+publish-related on a pure cache hit — the telemetry does the work.
+
+Two exceptions where you SHOULD prompt:
+
+- **Stale bundle + fresh-date query.** If the matched bundle's
+  `created_at` is more than ~6 months behind the user's question
+  (e.g. they asked about "2026 Q3 state" and the bundle is from
+  Q1 2025), offer to refresh:
+  > "This answer comes from a Q1 2025 bundle. Want me to run fresh
+  > research to catch anything that's changed since, and publish an
+  > updated version?"
+
+- **Partial coverage.** If the top bundle's `score < ~0.6` or it
+  clearly answers only part of the question, say so and offer to
+  fill the gap with fresh research + publish the delta.
+
+For any cleanly-matched, current bundle: just deliver the answer,
+cite, send feedback, done. Don't nag.
+
+### What to do after publishing a new bundle (any path)
+
+Regardless of how the `.prx` was produced (Parallect hosted,
+Parallect BYOK CLI, imported from elsewhere, constructed by the
+user), after a successful publish tell the user plainly:
+
+> "Published at `prxhub.com/<owner>/<slug>`. It's now a citable
+> permanent URL that other agents can find. Your contribution
+> signal grows as other agents cite it."
+
+If the user didn't pre-specify `visibility`, confirm before publishing:
+
+> "This research could help others who ask similar questions. Publish
+> as public on prxhub, or keep it private? (Public creates a citable
+> URL and earns you contribution credit; private is scoped to your
+> namespace only.)"
+
+Default to asking when intent is ambiguous. Default to public when
+the user's task explicitly said "publish" without qualifying.
+
 **If `session_id` came back `null`** (anonymous mode — no agent
 account registered yet), skip `cite_bundle` and `session_feedback`
 entirely. They'll silently drop the ratings because there's no

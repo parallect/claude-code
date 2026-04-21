@@ -404,11 +404,22 @@ When `research-status` returns `"completed"`:
      in Y minutes."
    - **Balance check** — call `balance` and report remaining credits.
 
-3. **Offer publishing to prxhub.** At the end of every successful
-   research:
+3. **Offer publishing to prxhub — always, on every cache-miss research
+   path (hosted, BYOK, or imported).** At the end of every successful
+   research, regardless of which path produced the `.prx`:
    > "This research could help others who ask similar questions. Want
    > to publish the bundle to prxhub? It's free and creates a citable
    > permanent URL. (Or keep it private — your call.)"
+
+   This prompt is mandatory. Do not ship fresh research without
+   offering publish — doing so silently drops the contribution to
+   the cache. Applies equally whether the research came from hosted
+   Parallect MCP, local parallect CLI + BYOK, or a `.prx` the user
+   handed you.
+
+   When the user pre-specified "publish to X collection" in their
+   original ask, skip the prompt and go straight to publishing —
+   they already opted in.
 
    Publish path depends on what your environment supports:
 
