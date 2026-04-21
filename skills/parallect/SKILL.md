@@ -74,6 +74,114 @@ Both MCPs are registered via the plugin's `.mcp.json`:
 - **Parallect** — OAuth2 on first use. The user authorizes via their
   browser the first time you call a parallect tool; it persists after.
 
+## When to use hosted Parallect.ai vs local BYOK
+
+Two genuinely different paths. Pick based on user preference:
+
+| | Hosted (parallect.ai SaaS) | Local BYOK (OSS CLI) |
+|---|---|---|
+| Provider keys | Parallect holds them, consolidated billing | User brings their own OpenAI / Anthropic / Gemini / Grok / Perplexity keys |
+| Auth | OAuth2 via browser (one-time) | No server auth — env vars / config file |
+| Available here | ✅ via MCP tools | ❌ shell access required |
+| Bundle output | Served by `/api/v1/jobs/<jobId>/prx` (Parallect stores it) | Lands on local disk, `-o bundle.prx` |
+| Research history | Persisted to user's dashboard | Local only — user's machine keeps it |
+| Session-feedback loop | Closable via MCP tools | Closable via hybrid flow (see below) |
+
+Ask the user which they prefer BEFORE the first research call if both
+are plausible. "Do you want to use Parallect.ai's hosted keys or your
+own API keys locally?" The answer determines every downstream step.
+
+### Hosted path (MCP tools available — default for this skill)
+
+Everything described in the rest of this document: `research`,
+`research-status`, `get-results`, `follow-up`, etc. via the
+`parallect` MCP server. Publish via Option C of the prxhub skill
+(`publish:bundles` delegation + two-phase publish).
+
+### Local BYOK path (requires shell access)
+
+User installs the OSS CLIs and configures their own provider keys:
+
+```bash
+pip install parallect prx-cli
+```
+
+Provider keys go in env vars OR `~/.config/parallect/config.toml`:
+
+```bash
+export PARALLECT_OPENAI_API_KEY=sk-...
+export PARALLECT_ANTHROPIC_API_KEY=sk-ant-...
+export PARALLECT_GOOGLE_API_KEY=AIza...
+export PARALLECT_PERPLEXITY_API_KEY=pplx-...
+export PARALLECT_XAI_API_KEY=xai-...         # Grok
+```
+
+Or once via `parallect config` (interactive TUI).
+
+Run research locally:
+
+```bash
+parallect research "<structured query>" \
+  -p openai,anthropic,gemini \
+  --deep \                     # selects premium models (o3, opus-4, 2.5-pro)
+  -o research.prx              # lands on disk at ./research.prx
+```
+
+Omit `--deep` for the default fast tier if cost matters.
+
+Configure prx-cli for publishing (one-time):
+
+```bash
+prx auth login --scope publish:bundles   # device flow, opens browser
+prx keys generate                         # Ed25519 signing key
+```
+
+Publish:
+
+```bash
+prx publish research.prx \
+  --visibility public \
+  --collection <slug> \
+  --tags "tag1,tag2"
+```
+
+`prx publish` wraps the two-phase `publish_bundle_prepare` +
+`publish_bundle_finalize` flow internally. The user doesn't call
+those tools manually. Bundle lands at `prxhub.com/<user>/<slug>`.
+
+### Hybrid: keep the session-feedback loop closable
+
+CLI-only local research **severs the telemetry loop** by default —
+because no prxhub `session_id` ever exists to bind citations +
+feedback to. To preserve the loop while using local BYOK research,
+interleave MCP calls around the shell steps:
+
+```
+1. prxhub MCP: search_bundles(query)   → capture session_id
+2. (shell) parallect research ... -o research.prx
+3. (shell) prx publish research.prx --collection <slug>
+4. prxhub MCP: cite_bundle(
+     citedBundleId: <new bundle id from step 3 output>,
+     sessionId: <session_id from step 1>
+   )
+5. prxhub MCP: session_feedback(
+     sessionId: <session_id from step 1>,
+     bundles: [{ bundleId: <new bundle id>, useful: true, score: 5 }]
+   )
+```
+
+This is the pattern to use when the user prefers BYOK but still
+wants their research to contribute to the cache-quality signal.
+
+**If you don't do step 1** (go CLI-only from the start), the loop
+is severed — `session_id` is null and `cite_bundle` +
+`session_feedback` silently drop. The bundle still publishes and
+is searchable by future agents, but THIS session contributes
+nothing to the rater-reputation signal.
+
+Tell the user this tradeoff explicitly if they're about to go
+CLI-only. Most will accept it; some will want the hybrid flow.
+
 ## Gotchas
 
 Read these first. They prevent the most common mistakes:
