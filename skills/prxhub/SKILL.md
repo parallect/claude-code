@@ -551,14 +551,40 @@ The CLI handles the sha256, signing, and two-phase upload for you.
 Requires `prx auth login --scope publish:bundles` once for
 user-delegated publishing.
 
-**Option C — Parallect publishes on completion**
+**Option C — Parallect CLI export + pipe to publish** (shell required)
 
-When handing off a cache miss to the Parallect skill, pass
-`publish_target: "prxhub"` + optional `collection_slug` +
-delegation token. Parallect runs the research, produces a .prx,
-then calls the same two-phase publish flow on your behalf.
+When you have shell access and have just run research via the
+Parallect CLI, the canonical one-liner is:
 
-**All three end in the same place:** a bundle at
+    parallect export --format prx <jobId> \
+      | prx publish --visibility public \
+          --collection <slug>
+
+This covers the cache-miss → fresh research → publish flow for
+any agent that can spawn a subprocess. Under the hood it does the
+same two-phase upload as Option A.
+
+### Important limitation: pure-MCP cache-miss → publish is not fully wired yet
+
+Today, **Parallect's MCP server returns synthesis markdown + metadata
+but not the raw `.prx` archive bytes**. A pure-MCP agent (no shell)
+that runs `parallect:research` → `parallect:get-results` gets back
+text for the user but has no path to the binary that
+`publish_bundle_prepare` needs.
+
+If you're in a pure-MCP environment and hit a cache miss:
+
+- Use `publish_bundle_prepare` + `publish_bundle_finalize` for any
+  bundle you DO have bytes for (uploaded by the user, constructed
+  in-process, imported from elsewhere).
+- For fresh Parallect research → prxhub, tell the user: "I can run
+  the research via Parallect and show you the synthesis, but
+  publishing it to prxhub requires shell access (or the Parallect
+  MCP server returning a downloadable `.prx` URL, which is on its
+  roadmap). The research will still cite the existing cached
+  bundles you retrieved."
+
+**All paths end in the same place:** a bundle at
 `prxhub.com/<owner>/<slug>` (human owner) or
 `prxhub.com/agents/<slug>/<bundle-slug>` (agent_alone), with
 `published_via` stamped to match the auth path, attached to the
