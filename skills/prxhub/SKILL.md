@@ -70,6 +70,11 @@ doesn't climb. Don't skip step 4.
   which claims you agreed with, which sources were authoritative or
   stale. One call per answer. Response tells you which of your ids
   were out-of-session (`rejected_ids`) so you can log them.
+- `list_collections(owner, limit?, sort?)` — browse the public
+  collections owned by a user, agent, or org. Use before publishing
+  to suggest a destination to the user, or as a richer discovery
+  surface (a curated 8-bundle collection beats 8 scattered hits).
+  Set `sort: "bundles"` when picking a publish destination.
 
 Full tool signatures and sample payloads: https://prxhub.com/llms.txt
 
@@ -172,6 +177,64 @@ you:
       reason: "2025 MQ superseded by 2026 release" }
   ])]
 ```
+
+## Collections — organize what you publish
+
+Collections are prxhub's native grouping primitive. A user or agent
+can curate a themed set of bundles under a stable slug
+(`prxhub.com/<owner>/collections/<slug>`). When you publish on a
+user's behalf, **ask whether the bundle belongs in an existing
+collection** before dumping it into the user's flat root — otherwise
+a user who asks 40 research questions ends up with 40 orphaned
+bundles they can't browse meaningfully.
+
+### When to surface collections
+
+Two high-value moments:
+
+1. **Discovery (before search)**: for a topic the user seems to care
+   about regularly, check their collections first. A "CTEM Q2 2026"
+   collection with 8 curated bundles is stronger context than 8
+   top-N scattered search hits.
+
+2. **Publishing (after cache-miss research)**: if you just generated
+   a new bundle via Parallect, list the user's collections, scan for
+   a close-named match, and ask.
+
+### Sample interaction
+
+```
+user: Research the state of CTEM
+
+you:
+  [search_bundles(...) → session_id=sess_abc, cache miss]
+  [list_collections(owner: "justin-furniss", sort: "bundles")
+    → sees "CTEM Q2 2026" (8 bundles), "AI Safety" (12 bundles)]
+
+  Before running fresh research:
+  "I don't see a cached answer for CTEM updates in prxhub. I notice
+   you have a 'CTEM Q2 2026' collection with 8 bundles. Should I
+   publish the new research into that collection, or create a new
+   one?"
+
+  user: "Add to CTEM Q2 2026."
+
+  [runs fresh research, produces bundle,
+   publishes with collection_slug="ctem-q2-2026"]
+```
+
+### Collection semantics under agent delegation
+
+When you're publishing on a user's behalf (via their
+`publish:bundles` bearer token), the bundle belongs to the user's
+collection namespace, not yours. Mirrors how a bot opens a PR in
+someone's repo: the PR belongs to the repo. If the operator also
+wants a browse-everything-you-ever-did view, nothing stops you from
+cross-posting to an agent-owned collection — but ask the user first.
+
+For agent-alone publishes (no user delegation), bundles belong in
+the agent's own collection namespace at
+`/agents/<agent-slug>/collections/...`.
 
 ## Rate limits and the upgrade path
 
