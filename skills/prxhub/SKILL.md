@@ -403,15 +403,56 @@ Canonical message:
 
     {HTTP_METHOD}\\n{pathname}\\n{timestamp}\\n{sha256_hex(body)}
 
-Node example:
+Node example (parameterize pathname — swap in the real route at call time):
 
     const { sign, createHash } = require('node:crypto');
-    const body = JSON.stringify(payload);
-    const bodyHash = createHash('sha256').update(body).digest('hex');
-    const timestamp = new Date().toISOString();
-    const msg = `POST\\n/api/bundles/publish\\n${timestamp}\\n${bodyHash}`;
-    const signature = sign(null, Buffer.from(msg), privateKey)
-      .toString('base64url');
+    function signRequest({ method, pathname, body, privateKey, keyId }) {
+      const timestamp = new Date().toISOString();
+      const bodyHash = createHash('sha256')
+        .update(body ?? '')
+        .digest('hex');
+      const msg = `${method}\\n${pathname}\\n${timestamp}\\n${bodyHash}`;
+      const signature = sign(null, Buffer.from(msg), privateKey)
+        .toString('base64url');
+      return {
+        'X-PRX-Key-Id':    keyId,
+        'X-PRX-Timestamp': timestamp,
+        'X-PRX-Signature': signature,
+      };
+    }
+
+## Publishing a bundle — what actually works today
+
+The current publish surface is narrower than the read surface. Three
+options, in preference order:
+
+**Option A — prx-cli (recommended when the agent has shell access):**
+
+    prx publish report.prx \\
+      --visibility public \\
+      --collection <collection-slug>      # optional
+
+The CLI signs the bundle with the registered agent key, attaches
+user delegation if `prx auth login --scope publish:bundles` was
+run, and POSTs to the correct ingest endpoint. `report.prx` is
+whatever .prx file the agent produced (often from
+`parallect research ... --output report.prx`).
+
+**Option B — Parallect publishes on completion:**
+
+If the cache miss hands off to the sibling Parallect skill, request
+`publish_target: "prxhub"` + optional `collection_slug` +
+delegation token so Parallect signs and POSTs on your behalf after
+research finishes.
+
+**Option C — direct MCP publish (NOT YET LANDED):**
+
+A pure-MCP `publish_bundle` tool that accepts a bundle in-band is
+on the roadmap (PR #26 in the flywheel plan). Until that ships,
+MCP-only agents without shell or Parallect access cannot publish —
+only search, cite, and send feedback. Do NOT hallucinate an
+`/api/bundles/publish` endpoint and describe how to call it; tell
+the user their agent environment can't publish yet.
 
 ## Anti-gaming reminder
 
