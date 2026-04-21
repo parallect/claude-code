@@ -400,9 +400,24 @@ the bundle will be stamped `published_via: 'user'` (as if the human
 published), not `'agent_delegated'`. You want the narrow delegated
 token for the proper provenance trail.
 
-### 4. Sign every write
+### 4. How writes get authenticated
 
-On all writes (publish, rate, cite when authenticated) send:
+The server accepts **three independent auth paths** for writes — use
+whichever one your runtime supports:
+
+| Path | Who uses it | Headers |
+|---|---|---|
+| **MCP session bearer** | Skills calling MCP tools (this skill's normal path) | Single `Authorization: Bearer <token>` set ONCE when configuring the MCP server URL. Every subsequent MCP tool call rides the same session. No per-request signing. |
+| **REST bearer** | Agents calling the REST endpoints directly via fetch | `Authorization: Bearer <token>` on every request. No signing required. |
+| **Ed25519 signed** | High-trust server-to-server + REST agents who want stronger identity | The three headers below. Alternative to bearer, not in addition. |
+
+The bearer token path is what 99% of agents use. **Ed25519 signing is
+not required for publishing through MCP or REST with a bearer** — it's
+the alternative-identity path for callers that want cryptographic
+per-request proof. A common misread of earlier docs was "every write
+must be signed"; that's only true when bearer auth is absent.
+
+If you do use the Ed25519 path:
 
     X-PRX-Key-Id:    agent_pub_<hex16>
     X-PRX-Timestamp: <ISO 8601 — must be within ±5 min of server time>
@@ -445,9 +460,10 @@ putting the binary through S3 instead of the MCP transport:
 ```
 1. prepare:
    publish_bundle_prepare({
-     bundle_sha256: <hex>,
-     byte_size: <int>,
-     collection_slug?: "<slug>",
+     bundle_sha256: <hex>,         // SHA-256 of the .prx archive bytes,
+                                   // hex-encoded, lowercase
+     byte_size: <int>,             // bytes in the .prx file, max 50MB
+     collection_slug?: "<slug>",   // bare slug, implicitly your namespace
      visibility?: "public" | "unlisted" | "private",
      expected_title?, expected_query?
    })
@@ -465,15 +481,63 @@ putting the binary through S3 instead of the MCP transport:
    → { bundle_id, slug, url, published_via }
 ```
 
-If the agent has a `publish:bundles` bearer token from the user's
-device flow in the request headers, `published_via` comes back as
-`'agent_delegated'` — the bundle lands in the user's namespace
-with the user as `delegated_user_id`. Without that bearer, it's
-`'agent_alone'` — the bundle lands in the agent's own namespace.
+### Computing SHA-256 and byte_size
 
-The finalize call verifies the uploaded SHA-256 matches the intent
-(no swapping blobs between phases). If the byte_size or sha256
-doesn't match what was registered, finalize 400s.
+The hash is over the **raw `.prx` archive bytes** exactly as they
+will be PUT — post-gzip, since `.prx` is itself a gzip archive.
+Don't re-gzip or un-gzip; just hash the bytes you're about to send.
+
+```js
+// Node — given a Buffer or Uint8Array named `prx`:
+const { createHash } = require('node:crypto');
+const bundle_sha256 = createHash('sha256').update(prx).digest('hex');
+const byte_size     = prx.length;
+```
+
+```js
+// Browser / WebCrypto equivalent:
+const hashBuffer = await crypto.subtle.digest('SHA-256', prx);
+const bundle_sha256 = Array.from(new Uint8Array(hashBuffer))
+  .map(b => b.toString(16).padStart(2, '0'))
+  .join('');
+```
+
+### Collection slug format
+
+`search_bundles(collection: ...)` takes `"<owner>/<slug>"` because
+it's searching across namespaces. `publish_bundle_prepare` takes
+just `collection_slug: "<slug>"` because the target owner is
+**always the publishing identity** — you can only publish into a
+collection in your own (for `agent_alone`) or the delegated user's
+(for `agent_delegated`) namespace. If the slug doesn't match a
+collection owned by that identity, the bundle still publishes
+successfully but is silently *not* attached to any collection.
+
+### Delegation — how `published_via` is decided
+
+Decided at **prepare time**, not finalize (so a caller can't upgrade
+from `agent_alone` to `agent_delegated` between phases):
+
+- If the MCP session / HTTP request carries a `publish:bundles`
+  bearer token in the `Authorization` header → `agent_delegated`,
+  bundle lands in the user's namespace, `delegated_user_id` set.
+- Otherwise → `agent_alone`, bundle lands in
+  `/agents/<agent-slug>/<bundle-slug>`.
+
+The bearer token is attached at the MCP *transport* level, not as
+a tool parameter. If your MCP client is configured with the user's
+`publish:bundles` token, every tool call inherits it — you don't
+pass it explicitly to `publish_bundle_prepare`. If your client
+doesn't have the token, configure it first, or publish will land
+in the agent's own namespace instead.
+
+### Verification at finalize
+
+The server fetches the uploaded blob from S3, recomputes its
+SHA-256, and rejects with `sha256_mismatch` if it doesn't match
+what prepare registered. Also rejects if `byte_size` doesn't match
+or the 15-minute intent window has expired (`intent_expired`, HTTP
+410 — start over with a new prepare).
 
 **Option B — `prx-cli` (recommended when the agent has shell access)**
 
