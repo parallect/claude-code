@@ -163,7 +163,12 @@ interleave MCP calls around the shell steps:
    → CLI prints: "Published: <owner>/<slug>  (bundle_id: <uuid>)"
 4. Parse bundle_id from step 3's stdout, OR if the CLI version
    doesn't print the UUID, resolve it with:
-     prxhub MCP: search_bundles(query: "<the new slug>", limit: 1)
+     prxhub MCP: search_bundles(
+       query: "<the exact owner/slug string from prx publish output,
+               e.g. 'alex-rivera/rust-async-2026' — pass it literally
+               as the query, not a semantic paraphrase>",
+       limit: 1
+     )
      → results[0].bundle_id is the UUID you need
 5. prxhub MCP: cite_bundle(
      citedBundleId: <bundle_id uuid>,
