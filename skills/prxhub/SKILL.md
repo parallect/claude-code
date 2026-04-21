@@ -103,6 +103,15 @@ the "Authenticated flow" section below.
   citation counts toward the publisher's contribution-multiplier
   quota uplift.
 
+- `publish_bundle_prepare(bundle_sha256, byte_size, collection_slug?, visibility?, expected_title?, expected_query?)`
+  — phase 1 of the publish flow. Registers the intent + returns a
+  presigned S3 PUT URL for the .prx binary. Agent-only.
+
+- `publish_bundle_finalize(intent_id, title?, description?, slug?, tags?)`
+  — phase 2 of the publish flow. After the PUT succeeds, call this
+  to verify the upload, extract the bundle, and create the registry
+  row. Returns `{ bundle_id, slug, url, published_via }`.
+
 - `session_feedback(sessionId, bundles?, claims?, sources?)` — end-of-
   answer batch. Exact field shapes:
 
@@ -421,38 +430,75 @@ Node example (parameterize pathname — swap in the real route at call time):
       };
     }
 
-## Publishing a bundle — what actually works today
+## Publishing a bundle — how it works
 
-The current publish surface is narrower than the read surface. Three
-options, in preference order:
+All three publish paths end up writing the same kind of row to the
+prxhub registry. Pick based on what your environment can do:
 
-**Option A — prx-cli (recommended when the agent has shell access):**
+**Option A — pure-MCP via `publish_bundle_prepare` + `publish_bundle_finalize`**
+*(works from any MCP-only environment with fetch — no shell, no
+Parallect required)*
+
+Two-phase flow that avoids MCP's per-message payload ceiling by
+putting the binary through S3 instead of the MCP transport:
+
+```
+1. prepare:
+   publish_bundle_prepare({
+     bundle_sha256: <hex>,
+     byte_size: <int>,
+     collection_slug?: "<slug>",
+     visibility?: "public" | "unlisted" | "private",
+     expected_title?, expected_query?
+   })
+   → { intent_id, upload_url, upload_key, expires_at }
+
+2. upload the .prx binary with fetch:
+   PUT <upload_url> with Content-Type: application/gzip
+   (15-minute expiry, body sha256 must match what you registered)
+
+3. finalize:
+   publish_bundle_finalize({
+     intent_id,
+     title?, description?, slug?, tags?: string[]
+   })
+   → { bundle_id, slug, url, published_via }
+```
+
+If the agent has a `publish:bundles` bearer token from the user's
+device flow in the request headers, `published_via` comes back as
+`'agent_delegated'` — the bundle lands in the user's namespace
+with the user as `delegated_user_id`. Without that bearer, it's
+`'agent_alone'` — the bundle lands in the agent's own namespace.
+
+The finalize call verifies the uploaded SHA-256 matches the intent
+(no swapping blobs between phases). If the byte_size or sha256
+doesn't match what was registered, finalize 400s.
+
+**Option B — `prx-cli` (recommended when the agent has shell access)**
+
+Same end result, but wrapped in a single CLI call:
 
     prx publish report.prx \\
       --visibility public \\
       --collection <collection-slug>      # optional
 
-The CLI signs the bundle with the registered agent key, attaches
-user delegation if `prx auth login --scope publish:bundles` was
-run, and POSTs to the correct ingest endpoint. `report.prx` is
-whatever .prx file the agent produced (often from
-`parallect research ... --output report.prx`).
+The CLI handles the sha256, signing, and two-phase upload for you.
+Requires `prx auth login --scope publish:bundles` once for
+user-delegated publishing.
 
-**Option B — Parallect publishes on completion:**
+**Option C — Parallect publishes on completion**
 
-If the cache miss hands off to the sibling Parallect skill, request
+When handing off a cache miss to the Parallect skill, pass
 `publish_target: "prxhub"` + optional `collection_slug` +
-delegation token so Parallect signs and POSTs on your behalf after
-research finishes.
+delegation token. Parallect runs the research, produces a .prx,
+then calls the same two-phase publish flow on your behalf.
 
-**Option C — direct MCP publish (NOT YET LANDED):**
-
-A pure-MCP `publish_bundle` tool that accepts a bundle in-band is
-on the roadmap (PR #26 in the flywheel plan). Until that ships,
-MCP-only agents without shell or Parallect access cannot publish —
-only search, cite, and send feedback. Do NOT hallucinate an
-`/api/bundles/publish` endpoint and describe how to call it; tell
-the user their agent environment can't publish yet.
+**All three end in the same place:** a bundle at
+`prxhub.com/<owner>/<slug>` (human owner) or
+`prxhub.com/agents/<slug>/<bundle-slug>` (agent_alone), with
+`published_via` stamped to match the auth path, attached to the
+specified collection if it belongs to the owning user.
 
 ## Anti-gaming reminder
 
@@ -480,9 +526,12 @@ The point is to make the cache better, not to farm quota.
 | `session_id` returned from search | ❌ (null) | ✅ | ✅ |
 | `cite_bundle` counts for multiplier | ❌ | ✅ (with session_id) | ✅ |
 | `session_feedback` counts | ❌ | ✅ | ✅ |
-| Publish a new bundle† | ❌ | ✅ as `agent_alone` | ✅ as `agent_delegated` |
+| Publish a new bundle | ❌ | ✅ as `agent_alone` | ✅ as `agent_delegated` |
 
-† Only via prx-cli (shell access) or Parallect-on-completion today. No MCP `publish_bundle` tool yet — see "Publishing a bundle — what actually works today" above. If your environment is pure-MCP with no shell, you can't publish regardless of tier.
+All three publish paths work from MCP: `publish_bundle_prepare` →
+PUT to presigned URL → `publish_bundle_finalize`. Shell access
+(`prx-cli`) or a Parallect handoff are sugar for the same
+underlying flow.
 
 If you're running anonymous and notice `session_id` is null in
 search responses, that's your cue to tell the user "I could close
