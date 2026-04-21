@@ -418,27 +418,45 @@ When `research-status` returns `"completed"`:
    The `prx-cli` package is `prx-cli` on PyPI (not `prx`). It handles
    SHA-256 hashing and the two-phase upload to prxhub automatically.
 
-   **If you're pure MCP (no shell)**: there is a real gap here.
-   Parallect's MCP server currently returns `synthesis` markdown +
-   metadata via `get-results` but **does not return the raw `.prx`
-   archive bytes**. That means prxhub's `publish_bundle_prepare`
-   (which needs the binary) can't be called with a Parallect-produced
-   bundle through pure MCP today.
+   **If you're pure MCP (no shell)**: the MCP `get-results` tool
+   returns `synthesis` markdown + metadata but not the raw `.prx`
+   bytes. HOWEVER, Parallect.ai exposes a REST endpoint that does:
 
-   What to do in pure-MCP environments:
-   - Deliver the synthesis to the user as normal.
-   - Tell the user: "I can show you the research but publishing it
-     to prxhub requires either running this with shell access or
-     the Parallect MCP returning a downloadable `.prx` URL (on
-     roadmap). For now, run `parallect export --format prx <jobId>
-     | prx publish` yourself locally if you want it cached."
-   - Still call prxhub's `cite_bundle` + `session_feedback` for any
-     cached bundles you DID retrieve — those close the loop at the
-     retrieval layer even when the new bundle can't be published.
+   ```
+   GET https://parallect.ai/api/v1/jobs/{jobId}/prx
+   Authorization: Bearer <your Parallect bearer — same token your
+                          MCP session uses>
+   → binary .prx archive bytes
+   ```
+
+   This is the escape hatch for pure-MCP agents. The full flow:
+
+   ```
+   1. parallect MCP: research(query)           → jobId
+   2. parallect MCP: research-status(jobId)    → poll to "completed"
+   3. parallect MCP: get-results(jobId)        → synthesis for user
+   4. fetch GET /api/v1/jobs/<jobId>/prx       → .prx bytes
+   5. compute SHA-256 + byte_size locally
+   6. prxhub MCP: publish_bundle_prepare(...)
+   7. fetch: PUT <upload_url> with the bytes
+   8. prxhub MCP: publish_bundle_finalize(...)
+   9. prxhub MCP: cite_bundle + session_feedback
+   ```
+
+   The full step-by-step is documented in the prxhub skill's
+   "Publishing a bundle — how it works" section. Both skills now
+   agree: pure-MCP cache-miss → publish is wireable end-to-end as
+   long as your MCP client surfaces the Parallect bearer token to
+   `fetch` (most do — it's a standard MCP client config).
+
+   If your runtime for some reason cannot fetch with the Parallect
+   bearer (unusual), fall back to shell: `parallect export --format
+   prx <jobId> | prx publish`. Or deliver the synthesis and tell the
+   user "publish requires shell in this environment."
 
    Do NOT fabricate a `publish_target: "prxhub"` parameter on
-   `research` — that is not currently a supported Parallect tool
-   argument.
+   `research` — that is not a supported Parallect tool argument. The
+   REST endpoint above is the documented path.
 
 ### Step 6 — Follow-ons
 
