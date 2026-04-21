@@ -160,18 +160,31 @@ interleave MCP calls around the shell steps:
 1. prxhub MCP: search_bundles(query)   → capture session_id
 2. (shell) parallect research ... -o research.prx
 3. (shell) prx publish research.prx --collection <slug>
-4. prxhub MCP: cite_bundle(
-     citedBundleId: <new bundle id from step 3 output>,
+   → CLI prints: "Published: <owner>/<slug>  (bundle_id: <uuid>)"
+4. Parse bundle_id from step 3's stdout, OR if the CLI version
+   doesn't print the UUID, resolve it with:
+     prxhub MCP: search_bundles(query: "<the new slug>", limit: 1)
+     → results[0].bundle_id is the UUID you need
+5. prxhub MCP: cite_bundle(
+     citedBundleId: <bundle_id uuid>,
      sessionId: <session_id from step 1>
    )
-5. prxhub MCP: session_feedback(
+6. prxhub MCP: session_feedback(
      sessionId: <session_id from step 1>,
-     bundles: [{ bundleId: <new bundle id>, useful: true, score: 5 }]
+     bundles: [{ bundleId: <bundle_id uuid>, useful: true, score: 5 }]
    )
 ```
 
 This is the pattern to use when the user prefers BYOK but still
 wants their research to contribute to the cache-quality signal.
+
+**Extracting the bundle_id from `prx publish`:**
+
+Recent `prx-cli` versions print the full URL + UUID in a JSON block
+on success. Older versions only print the slug. If your shell wrapper
+doesn't surface the UUID, the search-by-slug fallback in step 4
+above always works because your newly-published bundle will be the
+top hit for its own slug.
 
 **If you don't do step 1** (go CLI-only from the start), the loop
 is severed — `session_id` is null and `cite_bundle` +

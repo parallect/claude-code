@@ -502,12 +502,20 @@ const bundle_sha256 = Array.from(new Uint8Array(hashBuffer))
   .join('');
 ```
 
-### Collection slug format
+### Collection slug format across tools
 
-`search_bundles(collection: ...)` takes `"<owner>/<slug>"` because
-it's searching across namespaces. `publish_bundle_prepare` takes
-just `collection_slug: "<slug>"` because the target owner is
-**always the publishing identity** — you can only publish into a
+The collection identifier shape depends on which tool you're calling.
+Get this wrong and calls return 404 for collections that exist:
+
+| Tool | Format | Reason |
+|---|---|---|
+| `search_bundles(collection: ...)` | `"<owner>/<slug>"` (combined) | Cross-namespace search |
+| `get_collection(owner: ..., slug: ...)` | split args (`owner`, `slug` separate) | RESTful addressing |
+| `publish_bundle_prepare(collection_slug: ...)` | `"<slug>"` bare | Owner implicit from publishing identity |
+| `prx publish --collection <slug>` | `"<slug>"` bare | CLI wrapper, owner inferred from auth |
+
+The `publish_*` forms take bare slug because the target owner is
+always the publishing identity — you can only publish into a
 collection in your own (for `agent_alone`) or the delegated user's
 (for `agent_delegated`) namespace. If the slug doesn't match a
 collection owned by that identity, the bundle still publishes
@@ -564,25 +572,43 @@ This covers the cache-miss → fresh research → publish flow for
 any agent that can spawn a subprocess. Under the hood it does the
 same two-phase upload as Option A.
 
-### Important limitation: pure-MCP cache-miss → publish is not fully wired yet
+### Pure-MCP cache-miss → publish is possible via the REST escape hatch
 
-Today, **Parallect's MCP server returns synthesis markdown + metadata
-but not the raw `.prx` archive bytes**. A pure-MCP agent (no shell)
-that runs `parallect:research` → `parallect:get-results` gets back
-text for the user but has no path to the binary that
-`publish_bundle_prepare` needs.
+Parallect's **MCP tool** `get-results` returns synthesis markdown +
+metadata but not the raw `.prx` bytes. However, Parallect.ai also
+exposes `GET /api/v1/jobs/{jobId}/prx` — a REST endpoint that
+returns the binary `.prx` archive directly. A pure-MCP agent with
+`fetch` capability can call this endpoint with the user's Parallect
+bearer token (the same token the MCP session uses) to get the bytes.
 
-If you're in a pure-MCP environment and hit a cache miss:
+The full pure-MCP cache-miss → publish flow:
 
-- Use `publish_bundle_prepare` + `publish_bundle_finalize` for any
-  bundle you DO have bytes for (uploaded by the user, constructed
-  in-process, imported from elsewhere).
-- For fresh Parallect research → prxhub, tell the user: "I can run
-  the research via Parallect and show you the synthesis, but
-  publishing it to prxhub requires shell access (or the Parallect
-  MCP server returning a downloadable `.prx` URL, which is on its
-  roadmap). The research will still cite the existing cached
-  bundles you retrieved."
+```
+1. parallect MCP: research(query)            → jobId
+2. parallect MCP: research-status(jobId)     → poll until "completed"
+3. parallect MCP: get-results(jobId)         → synthesis markdown for the user
+4. fetch:
+     GET https://parallect.ai/api/v1/jobs/<jobId>/prx
+     Authorization: Bearer <parallect-bearer>
+   → binary .prx bytes
+5. compute SHA-256 + byte_size of the binary
+6. prxhub MCP: publish_bundle_prepare(...)   → { intent_id, upload_url }
+7. fetch: PUT <upload_url> with the .prx bytes
+8. prxhub MCP: publish_bundle_finalize(...)  → { bundle_id, slug, url }
+9. prxhub MCP: cite_bundle + session_feedback to close the loop
+```
+
+Step 4 is the key: the bearer token already attached to your MCP
+session for `parallect:*` tool calls is the same shape the
+`/api/v1/jobs/<jobId>/prx` endpoint expects. If your client config
+exposes that token to `fetch` (most do — it's in the MCP client
+config), this works.
+
+**If your environment can't surface the Parallect token to `fetch`**
+(unusual — most MCP clients do), then shell access (`parallect
+export | prx publish`) is the fallback. In either case, the research
+still cites the existing cached bundles you retrieved regardless of
+whether the new research publishes successfully.
 
 **All paths end in the same place:** a bundle at
 `prxhub.com/<owner>/<slug>` (human owner) or
@@ -602,6 +628,13 @@ Also: **`session_id` is per-conversation-turn.** Don't reuse one
 across turns. Each user question should start a fresh search →
 fresh session. Reusing session_ids across conversations corrupts the
 signal without erroring.
+
+**If multiple searches happen in one turn** (e.g. a scoped collection
+search returns nothing, you fall back to a prxhub-wide search), use
+the `session_id` from **the search that actually returned the
+bundle you're citing**. The server validates that `citedBundleId` is
+in the session's retrieved set, so using the wrong session_id will
+drop the citation into `rejected_ids`.
 
 The point is to make the cache better, not to farm quota.
 
