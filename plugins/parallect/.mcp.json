@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "parallect": {
+      "type": "http",
+      "url": "https://parallect.ai/api/mcp/mcp"
+    }
+  }
+}

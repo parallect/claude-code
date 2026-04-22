@@ -11,10 +11,7 @@
   "plugins": [
     {
       "name": "parallect",
-      "source": {
-        "source": "github",
-        "repo": "parallect/parallect-plugin"
-      },
+      "source": "./plugins/parallect",
       "description": "Multi-provider deep research: runs Perplexity, Gemini, OpenAI, Grok, and Anthropic in parallel, then synthesizes cross-referenced reports with typed claims, confidence scores, and follow-on suggestions.",
       "homepage": "https://parallect.ai",
       "license": "MIT",
@@ -34,10 +31,7 @@
     },
     {
       "name": "prxhub",
-      "source": {
-        "source": "github",
-        "repo": "parallect/prxhub-plugin"
-      },
+      "source": "./plugins/prxhub",
       "description": "Cache-first access to the prxhub.com bundle registry. Search, download, cite, and publish verified .prx research bundles before spending compute on new research. Free to read, no account required.",
       "homepage": "https://prxhub.com",
       "license": "MIT",
