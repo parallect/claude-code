@@ -35,7 +35,7 @@ Cache-first access to the [prxhub.com](https://prxhub.com) bundle registry. Befo
 
 ## Why two plugins instead of one?
 
-They're logically distinct products. The registry is free and anonymous — anyone can read. Parallect is the paid research engine. Splitting them lets you install only what you need and lets each ship on its own cadence. When installed together, the prxhub skill will offer to delegate cache-misses to parallect automatically.
+They're logically distinct products. The registry is free and anonymous - anyone can read. Parallect is the paid research engine. Splitting them lets you install only what you need and lets each ship on its own cadence. When installed together, the prxhub skill will offer to delegate cache-misses to parallect automatically.
 
 ## Updating
 
@@ -51,4 +51,4 @@ Both plugins are also under review for inclusion in Anthropic's official plugin 
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+MIT - see [LICENSE](./LICENSE).
