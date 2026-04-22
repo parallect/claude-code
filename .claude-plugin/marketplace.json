@@ -1,0 +1,57 @@
+{
+  "name": "parallect",
+  "owner": {
+    "name": "SecureCoders / Parallect.ai",
+    "email": "hello@parallect.ai"
+  },
+  "metadata": {
+    "description": "Deep-research and cache-first bundles for Claude Code. Contains the parallect (multi-provider research) and prxhub (verified .prx bundle registry) plugins.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "parallect",
+      "source": {
+        "source": "github",
+        "repo": "parallect/parallect-plugin"
+      },
+      "description": "Multi-provider deep research: runs Perplexity, Gemini, OpenAI, Grok, and Anthropic in parallel, then synthesizes cross-referenced reports with typed claims, confidence scores, and follow-on suggestions.",
+      "homepage": "https://parallect.ai",
+      "license": "MIT",
+      "category": "research",
+      "keywords": [
+        "research",
+        "deep-research",
+        "multi-provider",
+        "synthesis",
+        "claims",
+        "perplexity",
+        "gemini",
+        "grok",
+        "openai",
+        "anthropic"
+      ]
+    },
+    {
+      "name": "prxhub",
+      "source": {
+        "source": "github",
+        "repo": "parallect/prxhub-plugin"
+      },
+      "description": "Cache-first access to the prxhub.com bundle registry. Search, download, cite, and publish verified .prx research bundles before spending compute on new research. Free to read, no account required.",
+      "homepage": "https://prxhub.com",
+      "license": "MIT",
+      "category": "research",
+      "keywords": [
+        "research",
+        "cache",
+        "bundles",
+        "registry",
+        "citation",
+        "provenance",
+        "prx",
+        "prxhub"
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
-# Parallect Plugin for Claude Code
+# Parallect marketplace for Claude Code
 
-Multi-provider deep research for [Claude Code](https://claude.ai/code). Queries Perplexity, Gemini, OpenAI, Grok, and Anthropic in parallel, then synthesizes results into a unified report with cross-referenced citations and conflict resolution.
+The canonical Claude Code plugin marketplace for the Parallect ecosystem. Two focused plugins, independently versioned, one install flow.
 
 ## Install
 
@@ -8,79 +8,47 @@ Multi-provider deep research for [Claude Code](https://claude.ai/code). Queries 
 /plugin marketplace add parallect/claude-code-plugin
 ```
 
-Or add to your project's `.mcp.json`:
+Then install whichever plugins you want:
 
-```json
-{
-  "mcpServers": {
-    "parallect": {
-      "type": "http",
-      "url": "https://parallect.ai/api/mcp/mcp"
-    }
-  }
-}
+```bash
+/plugin install parallect@parallect   # multi-provider deep research
+/plugin install prxhub@parallect      # cache-first .prx bundle registry
 ```
 
-## What it does
+Install both and Claude Code will hit the registry before spending on fresh research, and auto-publish new work back to the registry when you're done.
 
-When installed, Claude Code can:
+## Plugins in this marketplace
 
-- **Run deep research** on any topic using multiple AI providers simultaneously
-- **Synthesize findings** with cross-referenced citations and conflict resolution
-- **Extract claims** with provider attribution (which AI found what)
-- **Detect divergence** across providers (87% of findings are unique to one provider)
-- **Suggest follow-ons** for deeper investigation
+### [`parallect`](https://github.com/parallect/parallect-plugin)
 
-## Usage
+Multi-provider deep research. Runs Perplexity, Gemini, OpenAI, Grok, and Anthropic in parallel and synthesizes results with cross-referenced citations, typed claims with confidence scores, and follow-on suggestions.
 
-Just ask naturally:
+- Homepage: [parallect.ai](https://parallect.ai)
+- Source: [parallect/parallect-plugin](https://github.com/parallect/parallect-plugin)
 
-- "Research the competitive landscape for AI code editors"
-- "Deep dive on GLP-1 receptor agonists in NASH treatment"
-- "What do we know about the regulatory implications of autonomous vehicles in the EU?"
-- "Look up best practices for API rate limiting in 2026"
+### [`prxhub`](https://github.com/parallect/prxhub-plugin)
 
-Claude will check your balance, discuss budget, submit the research, poll for results, and deliver a synthesis with citations.
+Cache-first access to the [prxhub.com](https://prxhub.com) bundle registry. Before your agent spends minutes (and money) re-researching a topic, it checks the registry for existing high-fidelity `.prx` bundles and inherits the work. When it produces new research, it publishes a signed bundle back.
 
-## Authentication
+- Homepage: [prxhub.com](https://prxhub.com)
+- Source: [parallect/prxhub-plugin](https://github.com/parallect/prxhub-plugin)
 
-OAuth2. On first use, Claude Code opens your browser to authorize with your Parallect.ai account. No API key to copy.
+## Why two plugins instead of one?
 
-## Budget Tiers
+They're logically distinct products. The registry is free and anonymous — anyone can read. Parallect is the paid research engine. Splitting them lets you install only what you need and lets each ship on its own cadence. When installed together, the prxhub skill will offer to delegate cache-misses to parallect automatically.
 
-| Tier | Max Cost | Providers | Duration | Best for |
-|------|----------|-----------|----------|----------|
-| XXS | ~$1 | 1 | ~4-5 min | Quick factual lookups |
-| XS | ~$2 | 1-2 | ~8-10 min | Brief overviews |
-| S | ~$5 | 2 | ~15-18 min | Standard questions |
-| M | ~$15 | 3-4 | ~15-20 min | Detailed research |
-| L | ~$30 | 4-5 | ~20-25 min | Comprehensive analysis |
-| XL | ~$60 | All | ~30-45 min | Exhaustive multi-provider |
+## Updating
 
-Claude always discusses budget before spending your money.
+```bash
+/plugin marketplace update parallect
+```
 
-## MCP Tools
+Each plugin pulls its latest release from its own repo.
 
-| Tool | Purpose |
-|------|---------|
-| `research` | Submit a research query (async) |
-| `research-status` | Poll job progress |
-| `get-results` | Retrieve completed synthesis |
-| `follow-up` | Pursue follow-on questions |
-| `list-threads` | List recent research threads |
-| `get-thread` | Get full thread context |
-| `balance` | Check credit balance |
-| `usage` | View spend analytics |
-| `list-providers` | See available providers and tiers |
-| `search-claims` | Search claims across past research |
-| `get-claim-evidence` | Get evidence backing a claim |
+## Submitting to the official Anthropic directory
 
-## Links
-
-- [Parallect.ai](https://parallect.ai) -- Dashboard, billing, research history
-- [Documentation](https://parallect.ai/docs) -- API and MCP reference
-- [Open Source CLI](https://github.com/parallect/parallect) -- BYOK multi-provider research from your terminal
+Both plugins are also under review for inclusion in Anthropic's official plugin directory. Once verified, install paths may shorten to `/plugin install <name>@<official-marketplace-name>`. This self-hosted marketplace will continue to work regardless.
 
 ## License
 
-MIT
+MIT — see [LICENSE](./LICENSE).
