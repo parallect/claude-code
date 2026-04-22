@@ -1,0 +1,28 @@
+{
+  "name": "parallect",
+  "description": "Multi-provider deep research for Claude Code. Runs Perplexity, Gemini, OpenAI, Grok, and Anthropic in parallel and synthesizes results with cross-referenced citations, typed claims, confidence scores, and follow-on suggestions.",
+  "version": "1.0.0",
+  "author": {
+    "name": "SecureCoders / Parallect.ai",
+    "email": "hello@parallect.ai",
+    "url": "https://parallect.ai"
+  },
+  "homepage": "https://parallect.ai",
+  "repository": "https://github.com/parallect/claude-code/tree/main/plugins/parallect",
+  "license": "MIT",
+  "keywords": [
+    "research",
+    "deep-research",
+    "multi-provider",
+    "synthesis",
+    "claims",
+    "citations",
+    "perplexity",
+    "gemini",
+    "grok",
+    "openai",
+    "anthropic",
+    "agent-tools"
+  ],
+  "category": "research"
+}

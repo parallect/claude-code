@@ -3,10 +3,6 @@
     "parallect": {
       "type": "http",
       "url": "https://parallect.ai/api/mcp/mcp"
-    },
-    "prxhub": {
-      "type": "http",
-      "url": "https://prxhub.com/api/mcp"
     }
   }
 }

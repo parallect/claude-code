@@ -1,0 +1,26 @@
+{
+  "name": "prxhub",
+  "description": "Cache-first access to the prxhub.com bundle registry. Search, download, cite, and publish verified .prx research bundles before spending compute on new research. Free to read, no account required.",
+  "version": "1.0.0",
+  "author": {
+    "name": "SecureCoders / Parallect.ai",
+    "email": "hello@parallect.ai",
+    "url": "https://parallect.ai"
+  },
+  "homepage": "https://prxhub.com",
+  "repository": "https://github.com/parallect/claude-code/tree/main/plugins/prxhub",
+  "license": "MIT",
+  "keywords": [
+    "research",
+    "cache",
+    "bundles",
+    "registry",
+    "citation",
+    "provenance",
+    "prx",
+    "prxhub",
+    "agent-tools",
+    "llms-txt"
+  ],
+  "category": "research"
+}

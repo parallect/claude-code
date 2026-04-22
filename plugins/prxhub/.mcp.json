@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "prxhub": {
+      "type": "http",
+      "url": "https://prxhub.com/api/mcp"
+    }
+  }
+}
