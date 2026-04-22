@@ -1,15 +1,17 @@
-# Parallect for Claude Code
+# parallect-cloud
 
-Multi-provider deep research for [Claude Code](https://claude.ai/code). Runs Perplexity, Gemini, OpenAI, Grok, and Anthropic in parallel, then synthesizes the results into a unified report with cross-referenced citations, typed claims with confidence scores, and follow-on suggestions.
+Claude Code plugin for [parallect.ai](https://parallect.ai) (hosted). Runs multi-provider deep research on Parallect's managed infra - Perplexity, Gemini, OpenAI, Grok, and Anthropic in parallel - and synthesizes the results into a unified report with cross-referenced citations, typed claims with confidence scores, and follow-on suggestions.
+
+Looking for the BYOK / self-hosted path? See [`parallect-cli`](https://pypi.org/project/parallect/) on PyPI (local, free, bring your own provider keys). The matching Claude Code plugin, `parallect-local`, is coming soon.
 
 ## Install
 
 ```bash
 /plugin marketplace add parallect/claude-code
-/plugin install parallect@parallect
+/plugin install parallect-cloud@parallect
 ```
 
-Restart Claude Code when prompted; the `parallect` skill will auto-engage on research-style questions.
+Restart Claude Code when prompted; the `parallect-cloud` skill will auto-engage on research-style questions.
 
 ## What it does
 
@@ -73,6 +75,11 @@ Claude always confirms the tier with you before spending.
 ```bash
 /plugin install prxhub@parallect
 ```
+
+## Other Parallect paths
+
+- **`parallect-cli`** (on PyPI, `pip install parallect` today; renaming to `parallect-cli` - see [prx-ecosystem#3](https://github.com/parallect/prx-ecosystem/issues/3)) - same research pipeline, runs locally, you bring the provider keys. Free to use; you pay providers directly.
+- **`parallect-local`** (coming soon) - Claude Code wrapper around `parallect-cli` for users who prefer BYOK over OAuth.
 
 ## Links
 
