@@ -11,20 +11,20 @@ The canonical Claude Code plugin marketplace for the Parallect ecosystem. One re
 Then install whichever plugins you want:
 
 ```bash
-/plugin install parallect@parallect   # multi-provider deep research
-/plugin install prxhub@parallect      # cache-first .prx bundle registry
+/plugin install parallect-cloud@parallect   # hosted multi-provider research
+/plugin install prxhub@parallect            # cache-first .prx bundle registry
 ```
 
 Install both and Claude Code will hit the registry before spending on fresh research, and auto-publish new work back to the registry when you're done.
 
 ## Plugins in this marketplace
 
-### [`parallect`](./plugins/parallect)
+### [`parallect-cloud`](./plugins/parallect-cloud)
 
-Multi-provider deep research. Runs Perplexity, Gemini, OpenAI, Grok, and Anthropic in parallel and synthesizes results with cross-referenced citations, typed claims with confidence scores, and follow-on suggestions.
+Hosted multi-provider deep research. Runs Perplexity, Gemini, OpenAI, Grok, and Anthropic in parallel on parallect.ai's managed infra and synthesizes results with cross-referenced citations, typed claims with confidence scores, and follow-on suggestions. OAuth on first use. Paid per job.
 
 - Homepage: [parallect.ai](https://parallect.ai)
-- Source: [`plugins/parallect/`](./plugins/parallect)
+- Source: [`plugins/parallect-cloud/`](./plugins/parallect-cloud)
 
 ### [`prxhub`](./plugins/prxhub)
 
@@ -33,9 +33,13 @@ Cache-first access to the [prxhub.com](https://prxhub.com) bundle registry. Befo
 - Homepage: [prxhub.com](https://prxhub.com)
 - Source: [`plugins/prxhub/`](./plugins/prxhub)
 
-## Why two plugins instead of one?
+### `parallect-local` (coming soon)
 
-They're logically distinct products. The registry is free and anonymous, anyone can read. Parallect is the paid research engine. Splitting them lets you install only what you need and lets each ship on its own cadence. When installed together, the prxhub skill will offer to delegate cache-misses to parallect automatically.
+Claude Code wrapper for the OSS `parallect-cli` Python package (BYOK, runs locally, free). Same multi-provider research pipeline as parallect-cloud, but you bring your own provider keys and it executes on your machine. Currently ships as `pip install parallect` on PyPI (rename to `parallect-cli` in progress, see [prx-ecosystem#3](https://github.com/parallect/prx-ecosystem/issues/3)).
+
+## Why three plugins instead of one?
+
+They split along clean axes: cache (free, anonymous, read-first) vs research engine (paid on cloud / free on local). The cache is useful on its own. The research engines are interchangeable at the skill layer - the prxhub plugin will offer to delegate cache-misses to whichever research plugin is installed. Splitting them lets each ship on its own cadence and lets users install only what they need.
 
 ## Updating
 

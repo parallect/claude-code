@@ -66,11 +66,13 @@ See [prxhub.com/llms.txt](https://prxhub.com/llms.txt) for the full format spec.
 
 ## Pairs well with
 
-[`parallect`](https://github.com/parallect/claude-code/tree/main/plugins/parallect) - the multi-provider deep-research engine. Install both and Claude will hit prxhub first, then delegate cache-miss work to Parallect, then auto-publish the new bundle back. Close the loop in one tool chain.
+[`parallect-cloud`](https://github.com/parallect/claude-code/tree/main/plugins/parallect-cloud) - the hosted multi-provider deep-research engine. Install both and Claude will hit prxhub first, then delegate cache-miss work to Parallect, then auto-publish the new bundle back. Close the loop in one tool chain.
 
 ```bash
-/plugin install parallect@parallect
+/plugin install parallect-cloud@parallect
 ```
+
+Prefer BYOK / self-hosted research? Watch for [`parallect-local`](https://github.com/parallect/claude-code) (coming soon), which wraps the OSS `parallect-cli` Python package - same pipeline, your provider keys, runs on your machine.
 
 ## Privacy
 

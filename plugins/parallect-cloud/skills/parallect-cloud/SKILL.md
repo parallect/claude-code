@@ -1,7 +1,7 @@
 ---
-name: parallect
+name: parallect-cloud
 description: >
-  Deep research using Parallect.ai + prxhub. Before spending compute, search
+  Deep research using Parallect.ai (hosted) + prxhub. Before spending compute, search
   prxhub's public registry for existing research on the topic (free, no
   account). If nothing covers the question - or only partially covers it -
   run new multi-provider research on Parallect to fill the gap. Queries fan

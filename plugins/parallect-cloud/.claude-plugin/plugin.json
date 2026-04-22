@@ -1,0 +1,28 @@
+{
+  "name": "parallect-cloud",
+  "description": "Claude Code plugin for parallect.ai (hosted). Runs multi-provider deep research on Parallect-managed infra (Perplexity, Gemini, OpenAI, Grok, Anthropic) and synthesizes results with cross-referenced citations, typed claims, confidence scores, and follow-on suggestions. OAuth-gated, paid per job. For BYOK / self-hosted, see parallect-cli on PyPI (parallect-local plugin coming soon).",
+  "version": "1.0.0",
+  "author": {
+    "name": "SecureCoders / Parallect.ai",
+    "email": "hello@parallect.ai",
+    "url": "https://parallect.ai"
+  },
+  "homepage": "https://parallect.ai",
+  "repository": "https://github.com/parallect/claude-code/tree/main/plugins/parallect-cloud",
+  "license": "MIT",
+  "keywords": [
+    "research",
+    "deep-research",
+    "multi-provider",
+    "synthesis",
+    "claims",
+    "citations",
+    "perplexity",
+    "gemini",
+    "grok",
+    "openai",
+    "anthropic",
+    "agent-tools"
+  ],
+  "category": "research"
+}

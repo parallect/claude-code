@@ -5,14 +5,14 @@
     "email": "hello@parallect.ai"
   },
   "metadata": {
-    "description": "Deep-research and cache-first bundles for Claude Code. Contains the parallect (multi-provider research) and prxhub (verified .prx bundle registry) plugins.",
-    "version": "1.0.0"
+    "description": "Deep-research and cache-first bundles for Claude Code. Contains parallect-cloud (hosted multi-provider research) and prxhub (verified .prx bundle registry).",
+    "version": "1.1.0"
   },
   "plugins": [
     {
-      "name": "parallect",
-      "source": "./plugins/parallect",
-      "description": "Multi-provider deep research: runs Perplexity, Gemini, OpenAI, Grok, and Anthropic in parallel, then synthesizes cross-referenced reports with typed claims, confidence scores, and follow-on suggestions.",
+      "name": "parallect-cloud",
+      "source": "./plugins/parallect-cloud",
+      "description": "Claude Code plugin for parallect.ai (hosted). Runs multi-provider deep research on Parallect-managed infra (Perplexity, Gemini, OpenAI, Grok, Anthropic) and synthesizes reports with typed claims, confidence scores, and follow-on suggestions. OAuth-gated, paid. For BYOK / self-hosted, see parallect-cli on PyPI (parallect-local plugin coming soon).",
       "homepage": "https://parallect.ai",
       "license": "MIT",
       "category": "research",
